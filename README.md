@@ -16,7 +16,7 @@ Chameleon and MTCHSHIP Visual Clerk operate strictly as a **diskless, stateless 
 * **Customer-Owned Control Plane:** We operate no hosted control plane or customer dashboard. Your backend remains the sole control plane—owning user profiles, session orchestration, policy rules, and KYC decision state. Zero-dependency `JWS` signature verifiers (`server-helpers/`) and an unbranded `<chameleon-review-card>` web component (`@mtchship/chameleon-kyc-ui/admin`) are included so you can integrate verification signals directly into your backoffice.
 * **Flat-Rate Unlimited Add-ons via CNAME:** All supported verification capabilities—**Document OCR/MRZ**, **Presentation Attack Detection (Liveness PAD)**, **1:1 Face Comparison**, **ICAO 9303 NFC Chip Verification**, **Biometric Age Estimation**, **Proof-of-Address (PoA) Extraction**, **KYB Registry Lookups**, and **Stateless AML / PEP / Sanctions Screening**—are unlocked at the `Key Token` / `CNAME` level under an unlimited flat-rate subscription.
 * **Bring Your Own Object Storage (BYOS):** Visual Clerk provisions no persistent disk storage. Processed media files are streamed directly from volatile memory into your designated S3-compatible or cloud object storage bucket in your chosen jurisdiction via scoped write-only credentials or pre-signed URLs.
-* **Zero Data Custody:** Neither the client SDK nor Visual Clerk retains media files, biometric templates, AML screening inputs, or customer records after request completion.
+* **Zero Data Custody:** Neither the client SDK nor Visual Clerk retains media files, biometric templates, AML screening inputs, or customer records after request completion. See [`COMPLIANCE.md`](./COMPLIANCE.md) for DPIA architectural statements.
 
 ### Memory Lifecycle & Buffer Ownership
 * **Buffer Ownership:** `payload.bytes` is loaned strictly for the execution scope of the transport callback. Retaining a reference after completion results in reading zeroed memory.
@@ -38,7 +38,8 @@ Chameleon and MTCHSHIP Visual Clerk operate strictly as a **diskless, stateless 
 | [`android/`](./android) | `com.mtchship.chameleon:kyc-ui` | Kotlin, Jetpack Compose (Material 3), CameraX, Android NFC |
 | [`ios/`](./ios) | `ChameleonKYCUI` | Swift, SwiftUI, AVFoundation, CoreNFC, `PrivacyInfo.xcprivacy` |
 | [`server-helpers/`](./server-helpers) | `JWS` Receipt Verifiers | Zero-dependency signature verification helpers (`Node.js`, `Python`, `Go`) |
-| [`spec/`](./spec) | OpenAPI 3.1 | Wire protocol specification for `CNAME` ingestion and signed `JWS` receipts |
+| [`COMPLIANCE.md`](./COMPLIANCE.md) | DPIA & Security Reference | Architectural statements for DPO, Legal, and Security reviews |
+| [`SECURITY.md`](./SECURITY.md) | Threat Model & Disclosure | Memory hygiene boundaries and private vulnerability reporting |
 
 ---
 
@@ -81,7 +82,7 @@ const session = mountChameleonKYC(document.getElementById('kyc-root')!, {
     keyToken: 'vc_pk_...'
   },
   onComplete: (receipt) => {
-    // Verify receipt.jwsToken on your backend control plane
+    // Verify receipt.jwsToken on your backend control plane and read media from your own bucket
     session.destroy();
   },
   onClose: () => session.destroy()
@@ -117,6 +118,19 @@ ChameleonKycView(
     onClose: { dismiss() }
 )
 ```
+
+---
+
+## Architectural Trade-offs vs. Hosted Drop-in SDKs
+
+| Dimension | Chameleon + Visual Clerk | Standard Hosted SDKs |
+| :--- | :--- | :--- |
+| **Control & Custody** | Diskless data plane; customer retains control plane & PII | Vendor-hosted control plane storing customer PII & states |
+| **Media Storage** | Direct RAM-to-Object-Storage forwarding (BYOS) | Stored on vendor-managed multi-tenant cloud buckets |
+| **Verification Scope** | OCR, Liveness, Face Match, NFC, KYB & Stateless AML | Often split across separate products or dashboards |
+| **Scaling & Pricing** | Flat-rate unlimited subscription via `Key Token` / `CNAME` | Per-check / per-module metered billing tiers |
+| **Source & Audit** | Apache 2.0 source; inspectable memory and network paths | Obfuscated/minified proprietary binaries |
+| **Client Footprint** | RAM-only capture with explicit buffer zeroing; 0 runtime deps | Temp files / IndexedDB caching; heavy bundles (`300 KB – 1.2 MB+`) |
 
 ---
 
