@@ -1,3 +1,5 @@
+import type { ChameleonLabels } from './ui/i18n/presets-copy.js';
+
 export type VerificationPreset =
   | 'GOV_EID'
   | 'FINTECH_KYC'
@@ -53,6 +55,7 @@ export interface AutoContextResult {
 }
 
 export interface FramePayload {
+  /** Volatile byte buffer. Valid strictly during onFrameReady execution; zero-filled immediately after. */
   readonly bytes: Uint8Array;
   readonly mimeType: 'image/webp' | 'image/jpeg';
   readonly kind: FrameKind;
@@ -68,13 +71,17 @@ export interface FramePayload {
 
 export interface SignedReceipt {
   sessionId: string;
+  /** Compact JWS token to be verified server-to-server by your control plane */
   jwsToken: string;
   completedAt: string;
 }
 
 export interface CnameTransportConfig {
+  /** First-party CNAME pointing to Visual Clerk regional ingress (e.g. https://yourdomain.com) */
   endpoint: string;
+  /** Write-only publishable or ephemeral session key token */
   keyToken: string;
+  /** Optional custom headers forwarded to your CNAME edge */
   headers?: Record<string, string>;
 }
 
@@ -84,21 +91,29 @@ interface ChameleonBaseConfig {
   detectedIpCountry?: string;
   countries?: CountryOption[];
   docKinds?: DocumentKind[];
+  /** Optional copy overrides to tailor UI strings to your domain */
+  labels?: Partial<ChameleonLabels>;
   onComplete?: (receipt: SignedReceipt) => void;
   onError?: (error: { code: ChameleonErrorCode; message: string; recoverable: boolean }) => void;
   onClose?: () => void;
 }
 
+/** Built-in CNAME ingestion mode */
 export interface ManagedTransportConfig extends ChameleonBaseConfig {
   transport: CnameTransportConfig;
   onFrameReady?: never;
 }
 
+/** Custom transport override mode (e.g. mTLS proxy or self-hosted pipeline) */
 export interface CustomTransportConfig extends ChameleonBaseConfig {
   onFrameReady: (payload: FramePayload) => Promise<void>;
   transport?: never;
 }
 
+/**
+ * Compile-time XOR constraint: callers must provide either `transport` (CNAME + Key Token)
+ * or `onFrameReady` (custom ingestion handler), never both and never neither.
+ */
 export type ChameleonConfig = ManagedTransportConfig | CustomTransportConfig;
 
 export interface ChameleonSessionHandle {
