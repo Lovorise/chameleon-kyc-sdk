@@ -1,0 +1,17 @@
+:host,
+.chameleon-kyc-container {
+  --chameleon-bg: Canvas;
+  --chameleon-fg: CanvasText;
+  --chameleon-accent: AccentColor;
+  --chameleon-border: color-mix(in srgb, currentColor 18%, transparent);
+  --chameleon-radius: 10px;
+  --chameleon-font: inherit;
+
+  display: block;
+  font-family: var(--chameleon-font);
+  background-color: var(--chameleon-bg);
+  color: var(--chameleon-fg);
+  border: 1px solid var(--chameleon-border);
+  border-radius: var(--chameleon-radius);
+  box-sizing: border-box;
+}
