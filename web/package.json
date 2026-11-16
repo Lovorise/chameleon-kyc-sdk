@@ -23,20 +23,11 @@
     },
     "./styles/chameleon.css": "./styles/chameleon.css"
   },
-  "files": [
-    "dist",
-    "styles",
-    "README.md"
-  ],
-  "sideEffects": [
-    "./dist/element.js",
-    "./dist/admin/review-card.js",
-    "./styles/chameleon.css"
-  ],
+  "files": ["dist", "styles", "README.md"],
+  "sideEffects": ["./dist/element.js", "./dist/admin/review-card.js", "./styles/chameleon.css"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint src/**/*.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {},
   "devDependencies": {
