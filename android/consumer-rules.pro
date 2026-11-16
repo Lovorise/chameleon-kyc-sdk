@@ -1,0 +1,2 @@
+-keep public class com.mtchship.chameleon.kyc.** { public *; }
+-keepclassmembers class com.mtchship.chameleon.kyc.** { public *; }
