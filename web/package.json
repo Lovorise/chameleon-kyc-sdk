@@ -1,0 +1,45 @@
+{
+  "name": "@mtchship/chameleon-kyc-ui",
+  "version": "1.0.0",
+  "description": "Unbranded, zero-dependency, RAM-only KYC capture SDK for Web (ESM + Shadow DOM Web Component)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/element.js"
+    },
+    "./admin": {
+      "types": "./dist/admin/review-card.d.ts",
+      "import": "./dist/admin/review-card.js"
+    },
+    "./styles/chameleon.css": "./styles/chameleon.css"
+  },
+  "files": [
+    "dist",
+    "styles",
+    "README.md"
+  ],
+  "sideEffects": [
+    "./dist/element.js",
+    "./dist/admin/review-card.js",
+    "./styles/chameleon.css"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
