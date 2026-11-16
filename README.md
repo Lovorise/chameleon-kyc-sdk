@@ -11,20 +11,23 @@ Connect the SDK via your first-party `CNAME` and `Key Token` to route payloads t
 ## Architecture & Guarantees
 
 ### Control Plane, Storage & Unlimited Add-on Model
+
 Chameleon and MTCHSHIP Visual Clerk operate strictly as a **diskless, stateless data plane**:
 
-* **Customer-Owned Control Plane:** We operate no hosted control plane or customer dashboard. Your backend remains the sole control plane—owning user profiles, session orchestration, policy rules, and KYC decision state. Zero-dependency `JWS` signature verifiers (`server-helpers/`) and an unbranded `<chameleon-review-card>` web component (`@mtchship/chameleon-kyc-ui/admin`) are included so you can integrate verification signals directly into your backoffice.
+* **Customer-Owned Control Plane:** We operate no hosted control plane or customer dashboard. Your backend remains the sole control plane—owning user profiles, session orchestration, policy rules, and KYC decision state. Standard `JWS` verification libraries and an unbranded `<chameleon-review-card>` web component (`@mtchship/chameleon-kyc-ui/admin`) let you verify signed receipts and integrate verification signals directly into your backoffice.
 * **Flat-Rate Unlimited Add-ons via CNAME:** All supported verification capabilities—**Document OCR/MRZ**, **Presentation Attack Detection (Liveness PAD)**, **1:1 Face Comparison**, **ICAO 9303 NFC Chip Verification**, **Biometric Age Estimation**, **Proof-of-Address (PoA) Extraction**, **KYB Registry Lookups**, and **Stateless AML / PEP / Sanctions Screening**—are unlocked at the `Key Token` / `CNAME` level under an unlimited flat-rate subscription.
 * **Bring Your Own Object Storage (BYOS):** Visual Clerk provisions no persistent disk storage. Processed media files are streamed directly from volatile memory into your designated S3-compatible or cloud object storage bucket in your chosen jurisdiction via scoped write-only credentials or pre-signed URLs.
 * **Zero Data Custody:** Neither the client SDK nor Visual Clerk retains media files, biometric templates, AML screening inputs, or customer records after request completion. See [`COMPLIANCE.md`](./COMPLIANCE.md) for DPIA architectural statements.
 
 ### Memory Lifecycle & Buffer Ownership
+
 * **Buffer Ownership:** `payload.bytes` is loaned strictly for the execution scope of the transport callback. Retaining a reference after completion results in reading zeroed memory.
 * **Web (`Uint8Array`):** Pre-allocated `ArrayBuffer` pool zeroed via `Uint8Array.fill(0)` in `finally` blocks.
 * **Android (`ByteArray`):** CameraX `ImageProxy` and `IsoDep` NFC buffers overwritten via `Arrays.fill(bytes, 0)` immediately upon handoff return.
 * **iOS (`Data`):** Locked `CVPixelBuffer` and `CoreNFC` buffers scrubbed via C `memset_s` inside `defer` blocks to prevent Copy-on-Write retention.
 
 ### On-Device Pre-Flight Gate & Stateless Compliance
+
 * **Pre-Flight Quality Gate:** Evaluates luma distribution, specular glare, and Laplacian edge sharpness on a downsampled 360p plane in volatile RAM (`< 3ms` on mid-tier ARM64 hardware, `< 25 MB` peak transient memory) before network serialisation.
 * **Global Compliance Alignment:** The client SDK extracts no biometric templates on device. Combined with diskless BYOS forwarding, this supports data-minimisation obligations across **UK GDPR / DPA 2018**, **EU GDPR (Art. 9)**, **Swiss FADP**, and **CCPA/CPRA**, while multi-frame liveness and NFC presets supply pipelines aligned with **ISO/IEC 30107-3**, **UK DIATF (GPG 45)**, **eIDAS**, and **NIST SP 800-63A**.
 
@@ -37,7 +40,6 @@ Chameleon and MTCHSHIP Visual Clerk operate strictly as a **diskless, stateless 
 | [`web/`](./web) | `@mtchship/chameleon-kyc-ui` | TypeScript ESM + Shadow DOM `<chameleon-kyc>` & `<chameleon-review-card>`, WebRTC, 0 runtime deps |
 | [`android/`](./android) | `com.mtchship.chameleon:kyc-ui` | Kotlin, Jetpack Compose (Material 3), CameraX, Android NFC |
 | [`ios/`](./ios) | `ChameleonKYCUI` | Swift, SwiftUI, AVFoundation, CoreNFC, `PrivacyInfo.xcprivacy` |
-| [`server-helpers/`](./server-helpers) | `JWS` Receipt Verifiers | Zero-dependency signature verification helpers (`Node.js`, `Python`, `Go`) |
 | [`COMPLIANCE.md`](./COMPLIANCE.md) | DPIA & Security Reference | Architectural statements for DPO, Legal, and Security reviews |
 | [`SECURITY.md`](./SECURITY.md) | Threat Model & Disclosure | Memory hygiene boundaries and private vulnerability reporting |
 
